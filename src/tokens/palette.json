@@ -1,0 +1,380 @@
+{
+  "navy": {
+    "hex": "#02154C",
+    "anchor": 950,
+    "role": "Core identity — brand wordmark, footer",
+    "contrastOnWhite": 17.3,
+    "scale": [
+      {
+        "step": 50,
+        "hex": "#F0F4FF",
+        "onWhite": 1.1
+      },
+      {
+        "step": 100,
+        "hex": "#C7D5FE",
+        "onWhite": 1.46
+      },
+      {
+        "step": 200,
+        "hex": "#9FB7FC",
+        "onWhite": 1.97
+      },
+      {
+        "step": 300,
+        "hex": "#7698FB",
+        "onWhite": 2.74
+      },
+      {
+        "step": 400,
+        "hex": "#4E7AFA",
+        "onWhite": 3.83
+      },
+      {
+        "step": 500,
+        "hex": "#255CF9",
+        "onWhite": 5.28
+      },
+      {
+        "step": 600,
+        "hex": "#0642EE",
+        "onWhite": 6.95
+      },
+      {
+        "step": 700,
+        "hex": "#0537C6",
+        "onWhite": 8.87
+      },
+      {
+        "step": 800,
+        "hex": "#042B9D",
+        "onWhite": 11.43
+      },
+      {
+        "step": 900,
+        "hex": "#032075",
+        "onWhite": 14.31
+      },
+      {
+        "step": 950,
+        "hex": "#02154C",
+        "onWhite": 17.3
+      }
+    ]
+  },
+  "purple": {
+    "hex": "#6245A1",
+    "anchor": 600,
+    "role": "Core identity — primary buttons, links, active states, focus rings",
+    "contrastOnWhite": 7.28,
+    "scale": [
+      {
+        "step": 50,
+        "hex": "#F6F4FA",
+        "onWhite": 1.09
+      },
+      {
+        "step": 100,
+        "hex": "#DDD5ED",
+        "onWhite": 1.42
+      },
+      {
+        "step": 200,
+        "hex": "#C4B7E0",
+        "onWhite": 1.88
+      },
+      {
+        "step": 300,
+        "hex": "#AA98D3",
+        "onWhite": 2.58
+      },
+      {
+        "step": 400,
+        "hex": "#9179C5",
+        "onWhite": 3.66
+      },
+      {
+        "step": 500,
+        "hex": "#785AB8",
+        "onWhite": 5.31
+      },
+      {
+        "step": 600,
+        "hex": "#6245A1",
+        "onWhite": 7.28
+      },
+      {
+        "step": 700,
+        "hex": "#503883",
+        "onWhite": 9.4
+      },
+      {
+        "step": 800,
+        "hex": "#3E2C66",
+        "onWhite": 11.95
+      },
+      {
+        "step": 900,
+        "hex": "#2C1F48",
+        "onWhite": 15.04
+      },
+      {
+        "step": 950,
+        "hex": "#1A122B",
+        "onWhite": 18.02
+      }
+    ]
+  },
+  "teal": {
+    "hex": "#08A8B1",
+    "anchor": 700,
+    "role": "Core identity — decorative/structural accents only",
+    "contrastOnWhite": 2.9,
+    "scale": [
+      {
+        "step": 50,
+        "hex": "#F0FEFE",
+        "onWhite": 1.03
+      },
+      {
+        "step": 100,
+        "hex": "#C6FAFC",
+        "onWhite": 1.14
+      },
+      {
+        "step": 200,
+        "hex": "#9CF5FB",
+        "onWhite": 1.24
+      },
+      {
+        "step": 300,
+        "hex": "#71F1F9",
+        "onWhite": 1.34
+      },
+      {
+        "step": 400,
+        "hex": "#47EDF7",
+        "onWhite": 1.43
+      },
+      {
+        "step": 500,
+        "hex": "#1DE9F5",
+        "onWhite": 1.5
+      },
+      {
+        "step": 600,
+        "hex": "#0AD0DB",
+        "onWhite": 1.9
+      },
+      {
+        "step": 700,
+        "hex": "#08A8B1",
+        "onWhite": 2.9
+      },
+      {
+        "step": 800,
+        "hex": "#06838A",
+        "onWhite": 4.54
+      },
+      {
+        "step": 900,
+        "hex": "#045D62",
+        "onWhite": 7.64
+      },
+      {
+        "step": 950,
+        "hex": "#03383B",
+        "onWhite": 12.86
+      }
+    ]
+  },
+  "gold": {
+    "hex": "#E6AE49",
+    "anchor": 500,
+    "role": "Kaleidoscope accent — streaks, celebratory moments, donation CTA",
+    "contrastOnWhite": 2,
+    "scale": [
+      {
+        "step": 50,
+        "hex": "#FDF9F2",
+        "onWhite": 1.05
+      },
+      {
+        "step": 100,
+        "hex": "#F9EAD0",
+        "onWhite": 1.19
+      },
+      {
+        "step": 200,
+        "hex": "#F4DBAE",
+        "onWhite": 1.35
+      },
+      {
+        "step": 300,
+        "hex": "#EFCC8C",
+        "onWhite": 1.53
+      },
+      {
+        "step": 400,
+        "hex": "#EBBD6B",
+        "onWhite": 1.75
+      },
+      {
+        "step": 500,
+        "hex": "#E6AE49",
+        "onWhite": 2
+      },
+      {
+        "step": 600,
+        "hex": "#E09B1F",
+        "onWhite": 2.37
+      },
+      {
+        "step": 700,
+        "hex": "#B57E19",
+        "onWhite": 3.52
+      },
+      {
+        "step": 800,
+        "hex": "#8B6013",
+        "onWhite": 5.56
+      },
+      {
+        "step": 900,
+        "hex": "#60430D",
+        "onWhite": 9.11
+      },
+      {
+        "step": 950,
+        "hex": "#362507",
+        "onWhite": 14.74
+      }
+    ]
+  },
+  "pink": {
+    "hex": "#CA618E",
+    "anchor": 500,
+    "role": "Kaleidoscope accent — progress bars, step indicators",
+    "contrastOnWhite": 3.74,
+    "scale": [
+      {
+        "step": 50,
+        "hex": "#FBF4F7",
+        "onWhite": 1.08
+      },
+      {
+        "step": 100,
+        "hex": "#F1D6E2",
+        "onWhite": 1.36
+      },
+      {
+        "step": 200,
+        "hex": "#E7B9CD",
+        "onWhite": 1.72
+      },
+      {
+        "step": 300,
+        "hex": "#DE9CB8",
+        "onWhite": 2.2
+      },
+      {
+        "step": 400,
+        "hex": "#D47EA3",
+        "onWhite": 2.87
+      },
+      {
+        "step": 500,
+        "hex": "#CA618E",
+        "onWhite": 3.74
+      },
+      {
+        "step": 600,
+        "hex": "#BC3F75",
+        "onWhite": 5.11
+      },
+      {
+        "step": 700,
+        "hex": "#99335F",
+        "onWhite": 7.02
+      },
+      {
+        "step": 800,
+        "hex": "#752749",
+        "onWhite": 9.8
+      },
+      {
+        "step": 900,
+        "hex": "#511B33",
+        "onWhite": 13.51
+      },
+      {
+        "step": 950,
+        "hex": "#2E0F1C",
+        "onWhite": 17.48
+      }
+    ]
+  },
+  "blue": {
+    "hex": "#025298",
+    "anchor": 800,
+    "role": "Kaleidoscope accent — reserved for future use",
+    "contrastOnWhite": 7.89,
+    "scale": [
+      {
+        "step": 50,
+        "hex": "#F0F8FF",
+        "onWhite": 1.07
+      },
+      {
+        "step": 100,
+        "hex": "#C6E4FE",
+        "onWhite": 1.32
+      },
+      {
+        "step": 200,
+        "hex": "#9CD0FE",
+        "onWhite": 1.63
+      },
+      {
+        "step": 300,
+        "hex": "#72BCFD",
+        "onWhite": 2.03
+      },
+      {
+        "step": 400,
+        "hex": "#48A8FD",
+        "onWhite": 2.53
+      },
+      {
+        "step": 500,
+        "hex": "#1E94FC",
+        "onWhite": 3.14
+      },
+      {
+        "step": 600,
+        "hex": "#037FEC",
+        "onWhite": 4
+      },
+      {
+        "step": 700,
+        "hex": "#0369C2",
+        "onWhite": 5.52
+      },
+      {
+        "step": 800,
+        "hex": "#025298",
+        "onWhite": 7.89
+      },
+      {
+        "step": 900,
+        "hex": "#01396A",
+        "onWhite": 11.7
+      },
+      {
+        "step": 950,
+        "hex": "#01213C",
+        "onWhite": 16.35
+      }
+    ]
+  }
+}

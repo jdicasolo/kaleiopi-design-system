@@ -1,0 +1,37 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { Logo } from '../components/Logo';
+
+<Meta title="Introduction" />
+
+<Logo size="lg" />
+
+# Kaleiopi UI
+
+*Connect. Collaborate. Achieve.*
+
+The shared component library for the [Kaleiopi](https://github.com/jdicasolo/kaleiopi) frontend: brand color tokens plus the UI primitives the app repeats across its pages and modals: buttons, form controls, cards, modals, badges, banners, avatars and progress indicators, plus the study-room assistant.
+
+Every component here was extracted from a pattern the app already uses. The app currently writes these inline with Tailwind's stock `indigo` palette; the library implements the brand palette from `docs/brand-colors.md` instead.
+
+## Using it in the app
+
+Built with React 19 and Tailwind CSS v4, same as the app. Components ship as Tailwind class names, so the app's own Tailwind build styles them:
+
+```css
+/* frontend/src/index.css */
+@import 'tailwindcss';
+@import 'kaleiopi-ui/theme.css';
+@source '../node_modules/kaleiopi-ui/dist';
+```
+
+```tsx
+import { Button, Modal } from 'kaleiopi-ui';
+
+<Button onClick={save}>Save</Button>
+```
+
+## Rules of thumb
+
+- **Never hardcode a brand hex.** Use a `kaleiopi-*` token so the whole app can be recolored from one file.
+- **Gold, pink and teal fail WCAG AA as text.** For text-bearing UI, use a pale `-50` tint with `text-kaleiopi-navy`. See [Colors](?path=/docs/foundations-colors--docs).
+- **Functional colors stay functional.** Red, green and amber warnings keep their semantic meaning and are not remapped to brand accents.
