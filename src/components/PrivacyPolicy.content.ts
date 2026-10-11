@@ -9,7 +9,7 @@ export const PRIVACY_POLICY: LegalContent = {
   sections: [
     {
       heading: '1. Introduction',
-      body: `Vitruvius Informatics LLC ("we," "us," or "our") operates Kaleiopi (the "App" or "Service"), a web application that allows users to create Study Rooms, upload learning resources, take notes, and generate AI-assisted study materials such as quizzes, flashcards, and mind maps.
+      body: `Vitruvian Informatics LLC ("we," "us," or "our") operates Kaleiopi (the "App" or "Service"), a web application that allows users to create Study Rooms, upload learning resources, take notes, and generate AI-assisted study materials such as quizzes, flashcards, and mind maps.
 
 This Privacy Policy explains what information we collect, how we use it, how we protect it, and the choices you have. By using Kaleiopi, you agree to the practices described in this policy.`,
     },
@@ -54,7 +54,7 @@ We do not sell your personal information.`,
       body: `We do not share your personal information with third parties except in the following circumstances:
 — Service providers: We share information with vendors who help us operate the Service, such as hosting providers, AI/model providers (for generating quizzes, flashcards, and mind maps), and customer support tools. These providers are contractually obligated to use your information only to provide services to us. [List specific vendors here, e.g., cloud hosting provider, AI API provider.]
 — Legal requirements: We may disclose information if required by law, subpoena, or other legal process, or if we believe disclosure is necessary to protect our rights, your safety, or the safety of others.
-— Business transfers: If Vitruvius Informatics LLC is involved in a merger, acquisition, or sale of assets, your information may be transferred as part of that transaction. We will notify you of any such change.
+— Business transfers: If Vitruvian Informatics LLC is involved in a merger, acquisition, or sale of assets, your information may be transferred as part of that transaction. We will notify you of any such change.
 — With your consent: We may share information for other purposes with your explicit consent.`,
     },
     {
@@ -81,7 +81,7 @@ We recommend reviewing your AI service provider's own data processing terms, whi
 — Request a copy of your data in a portable format
 — Withdraw consent where processing is based on consent
 
-To exercise any of these rights, contact us at info@vitruviusinformatics.com. We will respond within the timeframe required by applicable law.`,
+To exercise any of these rights, contact us at info@vitruvianinformatics.com. We will respond within the timeframe required by applicable law.`,
     },
     {
       heading: "8. Children's Privacy",
