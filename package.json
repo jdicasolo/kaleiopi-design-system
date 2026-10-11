@@ -23,7 +23,7 @@
     "tokens": "node scripts/generate-tokens.mjs",
     "storybook": "storybook dev -p 6007",
     "build-storybook": "storybook build",
-    "deploy-storybook": "npm run build-storybook && aws s3 sync storybook-static s3://kaleiopi-design-system --delete && aws cloudfront create-invalidation --distribution-id E2KELD0GQ4SQ8P --paths '/*'",
+    "deploy-storybook": "npm run build-storybook && aws s3 sync storybook-static s3://kaleiopi-design-system --delete --cache-control no-cache && aws cloudfront create-invalidation --distribution-id E2KELD0GQ4SQ8P --paths '/*'",
     "build": "vite build && tsc -p tsconfig.build.json && cp src/tokens/theme.css dist/theme.css",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
