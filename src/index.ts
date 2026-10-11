@@ -19,4 +19,27 @@ export { Logo, type LogoProps } from './components/Logo';
 export { Modal, type ModalProps } from './components/Modal';
 export { PasswordInput, type PasswordInputProps } from './components/PasswordInput';
 export { ProgressBar, StepIndicator, type ProgressBarProps, type StepIndicatorProps } from './components/ProgressBar';
+export {
+  LegalDocument,
+  LegalDocumentModal,
+  type LegalDocumentProps,
+  type LegalDocumentModalProps,
+  type LegalContent,
+  type LegalSection,
+} from './components/LegalDocument';
+export {
+  PrivacyPolicy,
+  PrivacyPolicyModal,
+  PRIVACY_POLICY,
+  type PrivacyPolicyProps,
+  type PrivacyPolicyModalProps,
+} from './components/PrivacyPolicy';
+export {
+  TermsOfService,
+  TermsOfServiceModal,
+  TERMS_OF_SERVICE,
+  PARENT_CONSENT_ADDENDUM,
+  type TermsOfServiceProps,
+  type TermsOfServiceModalProps,
+} from './components/TermsOfService';
 export { cx } from './utils/cx';

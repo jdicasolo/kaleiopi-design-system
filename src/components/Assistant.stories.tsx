@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
+import { expect, fireEvent, fn, userEvent, waitFor, within } from 'storybook/test';
 import { Assistant, AssistantModal, type AssistantMessage } from './Assistant';
 import { Badge } from './Badge';
 import { Button } from './Button';
@@ -190,8 +190,8 @@ export const QuizHint: Story = {
     await step('Ask for a hint with a suggestion chip', async () => {
       const panel = within(assistant);
       await userEvent.click(panel.getByRole('button', { name: 'Just a hint' }));
-      await expect(panel.getByRole('status')).toHaveTextContent('Checking your materials…');
-      await expect(panel.getByRole('button', { name: 'Just a hint' })).toBeDisabled();
+      await expect(await panel.findByRole('status')).toHaveTextContent('Checking your materials…');
+      await waitFor(() => expect(panel.getByRole('button', { name: 'Just a hint' })).toBeDisabled());
       await panel.findByText(/where each model puts the electrons/, {}, { timeout: 3000 });
       await expect(panel.getByText('Lecture 4 slides')).toBeInTheDocument();
       await expect(panel.queryByRole('status')).not.toBeInTheDocument();
@@ -201,9 +201,15 @@ export const QuizHint: Story = {
       const panel = within(assistant);
       const input = panel.getByRole('textbox', { name: 'Message the assistant' });
       await expect(panel.getByRole('button', { name: 'Send' })).toBeDisabled();
-      await userEvent.type(input, 'Does the plum pudding model have a nucleus?{Enter}');
-      await expect(input).toHaveValue('');
-      await expect(panel.getByText('Does the plum pudding model have a nucleus?')).toBeInTheDocument();
+      // userEvent.type's keystrokes don't reach React's onChange in the production Storybook
+      // build (real typing does), so set the text with a change event and press Enter for real.
+      await userEvent.click(input);
+      fireEvent.change(input, { target: { value: 'Does the plum pudding model have a nucleus?' } });
+      await expect(panel.getByRole('button', { name: 'Send' })).toBeEnabled();
+      await userEvent.keyboard('{Enter}');
+      // React commits the cleared input just after the keystroke resolves, so wait for it.
+      await waitFor(() => expect(input).toHaveValue(''));
+      await expect(await panel.findByText('Does the plum pudding model have a nucleus?')).toBeInTheDocument();
       await panel.findByText(/has no nucleus at all/, {}, { timeout: 3000 });
       await expect(panel.getAllByText('Lecture 4 slides')).toHaveLength(2);
     });
