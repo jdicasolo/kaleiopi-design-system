@@ -34,6 +34,10 @@ export {
   type PrivacyPolicyProps,
   type PrivacyPolicyModalProps,
 } from './components/PrivacyPolicy';
+export { ICON_TONES, type IconTone } from './components/iconTones';
+export { ProfessorIcon, type ProfessorIconProps } from './components/ProfessorIcon';
+export { StudentIcon, type StudentIconProps } from './components/StudentIcon';
+export { TeachingAssistantIcon, type TeachingAssistantIconProps } from './components/TeachingAssistantIcon';
 export {
   TermsOfService,
   TermsOfServiceModal,
