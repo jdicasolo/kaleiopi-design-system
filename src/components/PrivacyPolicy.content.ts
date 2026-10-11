@@ -104,10 +104,10 @@ If we learn that we have collected personal information from a child under 17 wi
     {
       heading: '12. Contact Us',
       body: `If you have questions about this Privacy Policy or our data practices, contact us at:
-Vitruvius Informatics LLC
+Vitruvian Informatics LLC
 375 Orme Rd
 Ligonier, PA 15658
-info@vitruviusinformatics.com`,
+info@vitruvianinformatics.com`,
     },
   ],
   reviewChecklist: [
