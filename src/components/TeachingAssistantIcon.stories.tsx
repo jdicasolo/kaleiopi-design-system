@@ -27,7 +27,7 @@ export const Sizes: Story = {
   ),
 };
 
-/** Same palette outlines as `ProfessorIcon`. */
+/** Same palette tones as `ProfessorIcon`. */
 export const Tones: Story = {
   render: () => (
     <div className="flex items-center gap-4">

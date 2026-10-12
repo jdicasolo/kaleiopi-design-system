@@ -10,7 +10,7 @@ export default defineConfig({
   publicDir: false,
   build: {
     lib: { entry: 'src/index.ts', formats: ['es'], fileName: 'index' },
-    rollupOptions: { external: ['react', 'react-dom', 'react/jsx-runtime'] },
+    rollupOptions: { external: ['react', 'react-dom', 'react/jsx-runtime', 'lucide-react', '@tanstack/react-table'] },
     assetsInlineLimit: 100_000,
   },
 });

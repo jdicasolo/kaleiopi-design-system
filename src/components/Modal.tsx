@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { X } from 'lucide-react';
 import { cx } from '../utils/cx';
 
 export interface ModalProps {
@@ -14,7 +15,7 @@ export interface ModalProps {
   size?: 'sm' | 'md' | 'lg';
   /** Close when the backdrop is clicked. Turn off for forms that would lose input. */
   dismissOnBackdrop?: boolean;
-  /** Show a "✕ Close" button in the title row, as on the app's quiz modal. */
+  /** Show an "X Close" button in the title row, as on the app's quiz modal. */
   showClose?: boolean;
   /** Extra classes for the panel, e.g. to switch it to a flex column. */
   className?: string;
@@ -70,9 +71,9 @@ export function Modal({ open, onClose, title, icon, children, footer, size = 'sm
             <button
               type="button"
               onClick={onClose}
-              className="flex-shrink-0 text-sm text-gray-500 hover:text-gray-700 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-kaleiopi-purple-400"
+              className="flex-shrink-0 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-kaleiopi-purple-400"
             >
-              <span aria-hidden="true">✕ </span>Close
+              <X className="w-4 h-4" />Close
             </button>
           )}
         </div>

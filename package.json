@@ -46,5 +46,9 @@
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
     "vite": "^8.3.2"
+  },
+  "dependencies": {
+    "@tanstack/react-table": "^9.2.4",
+    "lucide-react": "^1.48.0"
   }
 }

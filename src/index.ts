@@ -46,4 +46,7 @@ export {
   type TermsOfServiceProps,
   type TermsOfServiceModalProps,
 } from './components/TermsOfService';
+export { Toggle, type ToggleProps } from './components/Toggle';
+export { Tooltip, type TooltipProps } from './components/Tooltip';
+export { UserTable, DEFAULT_ROLES, type UserTableProps, type KaleiopiUser, type UserRole } from './components/UserTable';
 export { cx } from './utils/cx';

@@ -26,7 +26,7 @@ export const Sizes: Story = {
   ),
 };
 
-/** Each tone pairs a palette outline with the same family's 200 tint. */
+/** Each tone is a palette color at a step that stays visible on white. */
 export const Tones: Story = {
   render: () => (
     <div className="flex items-center gap-4">

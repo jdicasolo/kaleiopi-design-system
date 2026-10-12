@@ -28,7 +28,7 @@ export const Sizes: Story = {
   ),
 };
 
-/** Same palette pairings as `ProfessorIcon`: outline plus the family's 200 tint on the pocket. */
+/** Same palette tones as `ProfessorIcon`. */
 export const Tones: Story = {
   render: () => (
     <div className="flex items-center gap-4">

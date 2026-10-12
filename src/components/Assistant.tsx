@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react';
+import { Maximize2 } from 'lucide-react';
 import { Badge, type BadgeTone } from './Badge';
 import { Button } from './Button';
 import { Card } from './Card';
@@ -148,7 +149,7 @@ export function Assistant({
           {actions}
           {onExpand && (
             <Button variant="ghost" size="sm" className="px-2" onClick={onExpand} aria-label="Open in a larger window">
-              <ExpandIcon />
+              <Maximize2 className="w-4 h-4" />
             </Button>
           )}
         </div>
@@ -266,14 +267,6 @@ function Bubble({ message }: { message: AssistantMessage }) {
         </div>
       )}
     </div>
-  );
-}
-
-function ExpandIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-      <path d="M12 3h5v5M17 3l-6 6M8 17H3v-5M3 17l6-6" />
-    </svg>
   );
 }
 

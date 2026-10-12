@@ -1,3 +1,4 @@
+import { Check } from 'lucide-react';
 import { cx } from '../utils/cx';
 
 export interface ProgressBarProps {
@@ -55,7 +56,7 @@ export function StepIndicator({ steps, current, className }: StepIndicatorProps)
                 state === 'todo' && 'bg-gray-100 text-gray-600',
               )}
             >
-              {state === 'done' ? '✓' : i + 1}
+              {state === 'done' ? <Check className="w-4 h-4" strokeWidth={3} role="img" aria-label={`Step ${i + 1}, done`} /> : i + 1}
             </span>
             <span className={cx('text-sm truncate', state === 'todo' ? 'text-gray-500' : 'text-kaleiopi-navy font-medium')}>{step}</span>
             {i < steps.length - 1 && <span aria-hidden="true" className={cx('h-0.5 flex-1 rounded-full', i < current ? 'bg-kaleiopi-pink' : 'bg-gray-200')} />}
