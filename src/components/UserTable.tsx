@@ -13,11 +13,12 @@ import {
   useTable,
   type Header,
 } from '@tanstack/react-table';
-import { ArrowDown, ArrowUp, ArrowUpDown, Search } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, Search, Trash2 } from 'lucide-react';
 import { Badge } from './Badge';
 import { Button } from './Button';
 import { Input, Select } from './Input';
 import { Modal } from './Modal';
+import { Tooltip } from './Tooltip';
 import { cx } from '../utils/cx';
 
 export type UserRole = 'student' | 'ta' | 'professor' | 'admin';
@@ -139,9 +140,17 @@ function RowActionsCell({ user }: { user: KaleiopiUser }) {
           </button>
         )}
         {!isSelf && (
-          <button type="button" disabled={busy} className={cx(linkButton, 'text-red-600 hover:text-red-700')} onClick={() => ctx.requestDelete(user)}>
-            Delete
-          </button>
+          <Tooltip content="Delete account">
+            <button
+              type="button"
+              disabled={busy}
+              aria-label={`Delete ${user.fullName}`}
+              className={cx(linkButton, 'inline-flex p-1 -m-1 text-red-600 hover:text-red-700')}
+              onClick={() => ctx.requestDelete(user)}
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </Tooltip>
         )}
       </div>
     </div>

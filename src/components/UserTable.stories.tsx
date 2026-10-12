@@ -72,7 +72,7 @@ export const Interactive: Story = {
     await userEvent.click(within(priyaRow).getByRole('button', { name: 'Verify' }));
     await expect(within(priyaRow).getByText('Verified')).toBeInTheDocument();
 
-    await userEvent.click(within(priyaRow).getByRole('button', { name: 'Delete' }));
+    await userEvent.click(within(priyaRow).getByRole('button', { name: /^Delete / }));
     await userEvent.click(page.getByRole('button', { name: 'Delete account' }));
     await expect(canvas.queryByText('Priya Shah')).not.toBeInTheDocument();
   },
@@ -119,7 +119,7 @@ export const ResendProgress: Story = {
 export const DeleteNeedsConfirmation: Story = {
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(within(canvas.getByText('Lindsay D').closest('tr')!).getByRole('button', { name: 'Delete' }));
+    await userEvent.click(within(canvas.getByText('Lindsay D').closest('tr')!).getByRole('button', { name: /^Delete / }));
     const dialog = within(document.body).getByRole('dialog', { name: 'Delete Lindsay D?' });
     await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
     await expect(args.onDelete).not.toHaveBeenCalled();
