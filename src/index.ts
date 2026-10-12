@@ -13,6 +13,16 @@ export { Avatar, AvatarStack, initials, type AvatarProps, type AvatarStackProps,
 export { Badge, type BadgeProps, type BadgeTone } from './components/Badge';
 export { Button, type ButtonProps, type ButtonVariant, type ButtonSize } from './components/Button';
 export { Card, type CardProps } from './components/Card';
+export {
+  DataTable,
+  createDataTableColumns,
+  type DataTableProps,
+  type DataTableColumn,
+  type DataTableFeatures,
+  type DataTableManual,
+  type DataTableQuery,
+  type DataTableSort,
+} from './components/DataTable';
 export { Field, type FieldProps } from './components/Field';
 export { Input, Textarea, Select, type InputProps, type TextareaProps, type SelectProps } from './components/Input';
 export { Logo, type LogoProps } from './components/Logo';
@@ -48,5 +58,5 @@ export {
 } from './components/TermsOfService';
 export { Toggle, type ToggleProps } from './components/Toggle';
 export { Tooltip, type TooltipProps } from './components/Tooltip';
-export { UserTable, DEFAULT_ROLES, type UserTableProps, type KaleiopiUser, type UserRole, type ResendState } from './components/UserTable';
+export { UserTable, DEFAULT_ROLES, type UserTableProps, type KaleiopiUser, type UserRole, type RoleOption, type UserStatus, type ResendState } from './components/UserTable';
 export { cx } from './utils/cx';

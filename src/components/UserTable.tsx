@@ -1,27 +1,18 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import {
-  columnFilteringFeature,
-  createColumnHelper,
-  createFilteredRowModel,
-  createSortedRowModel,
-  filterFn_includesString,
-  globalFilteringFeature,
-  rowSortingFeature,
-  sortFn_alphanumeric,
-  sortFn_datetime,
-  tableFeatures,
-  useTable,
-  type Header,
-} from '@tanstack/react-table';
-import { ArrowDown, ArrowUp, ArrowUpDown, Search, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { Badge } from './Badge';
 import { Button } from './Button';
-import { Input, Select } from './Input';
+import { createDataTableColumns, DataTable, type DataTableManual } from './DataTable';
+import { Select } from './Input';
 import { Modal } from './Modal';
 import { Tooltip } from './Tooltip';
 import { cx } from '../utils/cx';
 
 export type UserRole = 'student' | 'ta' | 'professor' | 'admin';
+export type RoleOption = { value: UserRole; label: string };
+
+/** Account status shown as a badge next to Active/Verified. */
+export type UserStatus = 'invite_pending' | 'needs_replacement';
 
 export interface KaleiopiUser {
   id: string;
@@ -43,6 +34,8 @@ export interface KaleiopiUser {
   isMinor?: boolean | null;
   /** A parent or guardian's consent is on file. Only shown for minors. */
   hasParentalConsent?: boolean | null;
+  /** "Invite pending" for an admin who hasn't set a password yet; "needs_replacement" for an admin on a non-Kaleiopi email. */
+  status?: UserStatus | null;
 }
 
 /** Progress of a resent verification email, per user id. */
@@ -50,8 +43,10 @@ export type ResendState = 'sending' | 'sent';
 
 export interface UserTableProps {
   users: KaleiopiUser[];
-  /** Options for the role dropdown. */
-  roles?: { value: UserRole; label: string }[];
+  /** Options for the role dropdown, the same for every row. */
+  roles?: RoleOption[];
+  /** Per-row role options; overrides `roles`. With a single option the dropdown is read-only. */
+  roleOptions?: (user: KaleiopiUser) => RoleOption[];
   /** The signed-in admin. Their own row can't change role or be deleted. */
   currentUserId?: string;
   /** Rows with a save in flight; their actions are disabled. */
@@ -65,32 +60,29 @@ export interface UserTableProps {
   onResendVerification?: (user: KaleiopiUser) => void;
   /** Resend progress by user id: "Sending…" while in flight, "Sent ✓" once delivered. */
   resendState?: Record<string, ResendState>;
+  /** Resend an admin invite. When set, "invite pending" rows get a Resend invite action. */
+  onResendInvite?: (user: KaleiopiUser) => void;
+  /** Server mode: paging, sorting and search happen on the server. See DataTable. */
+  manual?: DataTableManual;
+  loading?: boolean;
+  error?: ReactNode;
+  onRetry?: () => void;
   /** Show the search box above the table. */
   searchable?: boolean;
   emptyMessage?: ReactNode;
   className?: string;
 }
 
-export const DEFAULT_ROLES: NonNullable<UserTableProps['roles']> = [
+export const DEFAULT_ROLES: RoleOption[] = [
   { value: 'student', label: 'student' },
   { value: 'ta', label: 'TA' },
   { value: 'professor', label: 'professor' },
   { value: 'admin', label: 'admin' },
 ];
 
-const features = tableFeatures({
-  rowSortingFeature,
-  columnFilteringFeature,
-  globalFilteringFeature,
-  sortedRowModel: createSortedRowModel(),
-  filteredRowModel: createFilteredRowModel(),
-  sortFns: { alphanumeric: sortFn_alphanumeric, datetime: sortFn_datetime },
-  filterFns: { includesString: filterFn_includesString },
-});
-
 // Row actions come through context so the column definitions can stay static.
-interface RowActions extends Pick<UserTableProps, 'onRoleChange' | 'onActiveChange' | 'onVerifiedChange' | 'onResendVerification'> {
-  roles: NonNullable<UserTableProps['roles']>;
+interface RowActions extends Pick<UserTableProps, 'onRoleChange' | 'onActiveChange' | 'onVerifiedChange' | 'onResendVerification' | 'onResendInvite'> {
+  rolesFor: (user: KaleiopiUser) => RoleOption[];
   currentUserId?: string;
   busy: Set<string>;
   resendState: Record<string, ResendState>;
@@ -111,6 +103,8 @@ function RowActionsCell({ user }: { user: KaleiopiUser }) {
   const isSelf = user.id === ctx.currentUserId;
   const busy = ctx.busy.has(user.id);
   const resend = ctx.resendState[user.id];
+  const options = ctx.rolesFor(user);
+  const invitePending = user.status === 'invite_pending';
   return (
     <div className="flex flex-col gap-1.5 items-start">
       <div className="flex items-center gap-3">
@@ -118,12 +112,12 @@ function RowActionsCell({ user }: { user: KaleiopiUser }) {
           controlSize="sm"
           className="w-auto min-w-28"
           value={user.role}
-          disabled={isSelf || busy}
-          title={isSelf ? "You can't change your own role" : undefined}
+          disabled={isSelf || busy || options.length <= 1}
+          title={isSelf ? "You can't change your own role" : options.length <= 1 ? 'This role can’t be changed here' : undefined}
           aria-label={`Role for ${user.fullName}`}
           onChange={(e) => ctx.onRoleChange(user, e.target.value as UserRole)}
         >
-          {ctx.roles.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+          {options.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
         </Select>
       </div>
       {/* Wraps so every action stays visible when the table is narrower than its content. */}
@@ -131,10 +125,17 @@ function RowActionsCell({ user }: { user: KaleiopiUser }) {
         <button type="button" disabled={busy} className={cx(linkButton, 'text-kaleiopi-purple-600 hover:text-kaleiopi-purple-800')} onClick={() => ctx.onActiveChange(user, !user.active)}>
           {user.active ? 'Disable' : 'Enable'}
         </button>
-        <button type="button" disabled={busy} className={cx(linkButton, 'text-kaleiopi-purple-600 hover:text-kaleiopi-purple-800')} onClick={() => ctx.onVerifiedChange(user, !user.verified)}>
-          {user.verified ? 'Unverify' : 'Verify'}
-        </button>
-        {!user.verified && ctx.onResendVerification && (
+        {!invitePending && (
+          <button type="button" disabled={busy} className={cx(linkButton, 'text-kaleiopi-purple-600 hover:text-kaleiopi-purple-800')} onClick={() => ctx.onVerifiedChange(user, !user.verified)}>
+            {user.verified ? 'Unverify' : 'Verify'}
+          </button>
+        )}
+        {invitePending && ctx.onResendInvite && (
+          <button type="button" disabled={busy} className={cx(linkButton, 'text-kaleiopi-purple-600 hover:text-kaleiopi-purple-800')} onClick={() => ctx.onResendInvite!(user)}>
+            Resend invite
+          </button>
+        )}
+        {!invitePending && !user.verified && ctx.onResendVerification && (
           <button type="button" disabled={busy || resend === 'sending'} className={cx(linkButton, 'text-kaleiopi-purple-600 hover:text-kaleiopi-purple-800')} onClick={() => ctx.onResendVerification!(user)}>
             {resend === 'sending' ? 'Sending…' : resend === 'sent' ? 'Sent ✓' : 'Resend'}
           </button>
@@ -157,7 +158,7 @@ function RowActionsCell({ user }: { user: KaleiopiUser }) {
   );
 }
 
-const helper = createColumnHelper<typeof features, KaleiopiUser>();
+const helper = createDataTableColumns<KaleiopiUser>();
 
 const columns = helper.columns([
   // "Name @username", so search matches either and sorting goes by name.
@@ -186,7 +187,12 @@ const columns = helper.columns([
     cell: ({ row }) => (
       <div className="flex flex-wrap gap-1.5">
         <Badge tone={row.original.active ? 'success' : 'neutral'}>{row.original.active ? 'Active' : 'Disabled'}</Badge>
-        <Badge tone={row.original.verified ? 'success' : 'warning'}>{row.original.verified ? 'Verified' : 'Unverified'}</Badge>
+        {row.original.status === 'invite_pending' ? (
+          <Badge tone="warning">Invite pending</Badge>
+        ) : (
+          <Badge tone={row.original.verified ? 'success' : 'warning'}>{row.original.verified ? 'Verified' : 'Unverified'}</Badge>
+        )}
+        {row.original.status === 'needs_replacement' && <Badge tone="danger">Replace with @kaleiopi.app admin</Badge>}
       </div>
     ),
   }),
@@ -201,7 +207,7 @@ const columns = helper.columns([
         {row.original.tosVersion ? (
           <div className="text-gray-600">
             <div>ToS v{row.original.tosVersion}</div>
-            {row.original.tosAcceptedAt && <div className="text-xs text-gray-400">{formatDate(row.original.tosAcceptedAt)}</div>}
+            {row.original.tosAcceptedAt && <div className="text-xs text-gray-500">{formatDate(row.original.tosAcceptedAt)}</div>}
           </div>
         ) : (
           <span className="text-amber-700">Not accepted</span>
@@ -217,29 +223,13 @@ const columns = helper.columns([
   helper.display({ id: 'actions', header: 'Actions', cell: ({ row }) => <RowActionsCell user={row.original} /> }),
 ]);
 
-function SortableHeader({ header }: { header: Header<typeof features, KaleiopiUser, unknown> }) {
-  const label = header.column.columnDef.header as string;
-  if (!header.column.getCanSort()) return <>{label}</>;
-  const sorted = header.column.getIsSorted();
-  const Icon = sorted === 'asc' ? ArrowUp : sorted === 'desc' ? ArrowDown : ArrowUpDown;
-  return (
-    <button
-      type="button"
-      onClick={header.column.getToggleSortingHandler()}
-      className="inline-flex items-center gap-1 uppercase tracking-wide rounded hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-kaleiopi-purple-400"
-    >
-      {label}
-      <Icon className={cx('w-3.5 h-3.5', !sorted && 'opacity-40')} />
-    </button>
-  );
-}
-
-/** Admin list of Kaleiopi accounts: sortable, searchable, with per-row role,
- * enable/disable, verify/unverify, resend verification (optional), and delete
+/** Admin list of Kaleiopi accounts on DataTable: sortable, searchable (or server-paged), with per-row
+ * role, enable/disable, verify/unverify, resend verification or invite (optional), and delete
  * (confirmed in a dialog). Minors show their parental-consent status. */
 export function UserTable({
   users,
   roles = DEFAULT_ROLES,
+  roleOptions,
   currentUserId,
   busyUserIds,
   onRoleChange,
@@ -248,22 +238,16 @@ export function UserTable({
   onDelete,
   onResendVerification,
   resendState = {},
+  onResendInvite,
+  manual,
+  loading,
+  error,
+  onRetry,
   searchable = true,
   emptyMessage = 'No users yet.',
   className,
 }: UserTableProps) {
   const [pendingDelete, setPendingDelete] = useState<KaleiopiUser | null>(null);
-  const table = useTable({
-    features,
-    columns,
-    data: users,
-    getRowId: (u) => u.id,
-    globalFilterFn: 'includesString',
-    enableSortingRemoval: false,
-    getColumnCanGlobalFilter: (column) => !['status', 'actions', 'legal'].includes(column.id),
-  });
-  const rows = table.getRowModel().rows;
-  const search = (table.state.globalFilter as string | undefined) ?? '';
 
   const confirmDelete = () => {
     if (pendingDelete) onDelete(pendingDelete);
@@ -271,51 +255,28 @@ export function UserTable({
   };
 
   return (
-    <ActionsContext.Provider value={{ onRoleChange, onActiveChange, onVerifiedChange, onResendVerification, resendState, roles, currentUserId, busy: new Set(busyUserIds), requestDelete: setPendingDelete }}>
-      <div className={cx('flex flex-col gap-3', className)}>
-        {searchable && (
-          <div className="relative max-w-xs">
-            <Search aria-hidden="true" className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input controlSize="sm" className="pl-8" type="search" placeholder="Search name, email, school…" aria-label="Search users" value={search} onChange={(e) => table.setGlobalFilter(e.target.value)} />
-          </div>
-        )}
-        <div className="bg-white rounded-2xl shadow-sm overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
-              {table.getHeaderGroups().map((group) => (
-                <tr key={group.id}>
-                  {group.headers.map((header) => {
-                    const sorted = header.column.getIsSorted();
-                    return (
-                      <th key={header.id} scope="col" className="px-4 py-3 align-bottom" aria-sort={sorted === 'asc' ? 'ascending' : sorted === 'desc' ? 'descending' : undefined}>
-                        <SortableHeader header={header} />
-                      </th>
-                    );
-                  })}
-                </tr>
-              ))}
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {rows.map((row) => (
-                <tr key={row.id} className={cx('align-middle', !row.original.active && 'bg-gray-50/60')}>
-                  {row.getAllCells().map((cell) => (
-                    <td key={cell.id} className="px-4 py-3 text-gray-700">
-                      <table.FlexRender cell={cell} />
-                    </td>
-                  ))}
-                </tr>
-              ))}
-              {rows.length === 0 && (
-                <tr>
-                  <td colSpan={columns.length} className="px-4 py-10 text-center text-gray-500">
-                    {search ? `No users match “${search}”.` : emptyMessage}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+    <ActionsContext.Provider
+      value={{
+        onRoleChange, onActiveChange, onVerifiedChange, onResendVerification, onResendInvite, resendState,
+        rolesFor: roleOptions ?? (() => roles), currentUserId, busy: new Set(busyUserIds), requestDelete: setPendingDelete,
+      }}
+    >
+      <DataTable
+        data={users}
+        columns={columns}
+        getRowId={(u) => u.id}
+        searchable={searchable}
+        searchPlaceholder="Search name, email, school…"
+        searchLabel="Search users"
+        manual={manual}
+        loading={loading}
+        error={error}
+        onRetry={onRetry}
+        emptyMessage={emptyMessage}
+        noMatchMessage={(q) => `No users match “${q}”.`}
+        getRowClassName={(u) => (u.active ? undefined : 'bg-gray-50/60')}
+        className={className}
+      />
       <Modal
         open={pendingDelete !== null}
         onClose={() => setPendingDelete(null)}
