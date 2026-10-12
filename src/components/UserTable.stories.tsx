@@ -20,6 +20,8 @@ const MIXED: KaleiopiUser[] = [
   { id: '8', fullName: 'Marcus Chen', username: 'mchen', email: 'mchen@psu.edu', university: 'Penn State University', promoCode: 'NITTANY25', role: 'ta', active: true, verified: false, tosVersion: TOS, tosAcceptedAt: '2026-10-02T12:00:00Z' },
   { id: '9', fullName: 'Sam Rivera', username: 'srivera', email: 'srivera@pitt.edu', university: 'University of Pittsburgh', promoCode: 'PANTHER', role: 'student', active: false, verified: true, tosVersion: TOS, tosAcceptedAt: '2026-09-28T12:00:00Z' },
   { id: '10', fullName: 'Priya Shah', username: 'pshah', email: 'pshah@psu.edu', university: 'Penn State University', role: 'student', active: true, verified: false },
+  { id: '11', fullName: 'Ella Brooks', username: 'ebrooks', email: 'ebrooks@psu.edu', university: 'Penn State University', role: 'student', active: true, verified: true, tosVersion: TOS, tosAcceptedAt: '2026-10-03T12:00:00Z', isMinor: true, hasParentalConsent: true },
+  { id: '12', fullName: 'Noah Kim', username: 'nkim', email: 'nkim@pitt.edu', university: 'University of Pittsburgh', role: 'student', active: true, verified: true, tosVersion: TOS, tosAcceptedAt: '2026-10-04T12:00:00Z', isMinor: true, hasParentalConsent: false },
 ];
 
 /** Applies each action to local state, as the admin page would after its API call succeeds. */
@@ -76,8 +78,42 @@ export const Interactive: Story = {
   },
 };
 
-/** Disabled, unverified, promo-code, and never-accepted-terms users. */
+/** Disabled, unverified, promo-code, never-accepted-terms, and minor users. */
 export const MixedStates: Story = { args: { users: MIXED } };
+
+/** Minors show whether a parent or guardian's consent is on file. Adults show no badge. */
+export const ParentalConsent: Story = {
+  args: { users: MIXED },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(within(canvas.getByText('Ella Brooks').closest('tr')!).getByText('Parent consent on file')).toBeInTheDocument();
+    await expect(within(canvas.getByText('Noah Kim').closest('tr')!).getByText('Minor — no parent consent')).toBeInTheDocument();
+    await expect(within(canvas.getByText('Lindsay F').closest('tr')!).queryByText(/parent consent/)).not.toBeInTheDocument();
+  },
+};
+
+/** With `onResendVerification`, unverified rows get a Resend action. `resendState` shows its progress. */
+export const ResendVerification: Story = {
+  args: { users: MIXED, onResendVerification: fn() },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    const priyaRow = within(canvas.getByText('Priya Shah').closest('tr')!);
+    await userEvent.click(priyaRow.getByRole('button', { name: 'Resend' }));
+    await expect(args.onResendVerification).toHaveBeenCalledWith(expect.objectContaining({ id: '10' }));
+    // Verified users never get Resend.
+    await expect(within(canvas.getByText('Lindsay F').closest('tr')!).queryByRole('button', { name: 'Resend' })).not.toBeInTheDocument();
+  },
+};
+
+/** Resend in flight ("Sending…", disabled) and delivered ("Sent ✓"). */
+export const ResendProgress: Story = {
+  args: { users: MIXED, onResendVerification: fn(), resendState: { '8': 'sending', '10': 'sent' } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(within(canvas.getByText('Marcus Chen').closest('tr')!).getByRole('button', { name: 'Sending…' })).toBeDisabled();
+    await expect(within(canvas.getByText('Priya Shah').closest('tr')!).getByRole('button', { name: 'Sent ✓' })).toBeInTheDocument();
+  },
+};
 
 /** Delete asks first; cancelling leaves the user alone. */
 export const DeleteNeedsConfirmation: Story = {

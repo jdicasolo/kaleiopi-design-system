@@ -38,7 +38,14 @@ export interface KaleiopiUser {
   tosVersion?: string | null;
   /** ISO date the Terms were accepted. */
   tosAcceptedAt?: string | null;
+  /** Under 18 when they accepted the Terms. Shows a parental-consent badge in the Legal column. */
+  isMinor?: boolean | null;
+  /** A parent or guardian's consent is on file. Only shown for minors. */
+  hasParentalConsent?: boolean | null;
 }
+
+/** Progress of a resent verification email, per user id. */
+export type ResendState = 'sending' | 'sent';
 
 export interface UserTableProps {
   users: KaleiopiUser[];
@@ -53,6 +60,10 @@ export interface UserTableProps {
   onVerifiedChange: (user: KaleiopiUser, verified: boolean) => void;
   /** Called after the admin confirms in the delete dialog. */
   onDelete: (user: KaleiopiUser) => void;
+  /** Resend the verification email. When set, unverified rows get a Resend action. */
+  onResendVerification?: (user: KaleiopiUser) => void;
+  /** Resend progress by user id: "Sending…" while in flight, "Sent ✓" once delivered. */
+  resendState?: Record<string, ResendState>;
   /** Show the search box above the table. */
   searchable?: boolean;
   emptyMessage?: ReactNode;
@@ -77,10 +88,11 @@ const features = tableFeatures({
 });
 
 // Row actions come through context so the column definitions can stay static.
-interface RowActions extends Pick<UserTableProps, 'onRoleChange' | 'onActiveChange' | 'onVerifiedChange'> {
+interface RowActions extends Pick<UserTableProps, 'onRoleChange' | 'onActiveChange' | 'onVerifiedChange' | 'onResendVerification'> {
   roles: NonNullable<UserTableProps['roles']>;
   currentUserId?: string;
   busy: Set<string>;
+  resendState: Record<string, ResendState>;
   requestDelete: (user: KaleiopiUser) => void;
 }
 const ActionsContext = createContext<RowActions | null>(null);
@@ -97,6 +109,7 @@ function RowActionsCell({ user }: { user: KaleiopiUser }) {
   const ctx = useContext(ActionsContext)!;
   const isSelf = user.id === ctx.currentUserId;
   const busy = ctx.busy.has(user.id);
+  const resend = ctx.resendState[user.id];
   return (
     <div className="flex flex-col gap-1.5 items-start">
       <div className="flex items-center gap-3">
@@ -112,13 +125,19 @@ function RowActionsCell({ user }: { user: KaleiopiUser }) {
           {ctx.roles.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
         </Select>
       </div>
-      <div className="flex items-center gap-3">
+      {/* Wraps so every action stays visible when the table is narrower than its content. */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <button type="button" disabled={busy} className={cx(linkButton, 'text-kaleiopi-purple-600 hover:text-kaleiopi-purple-800')} onClick={() => ctx.onActiveChange(user, !user.active)}>
           {user.active ? 'Disable' : 'Enable'}
         </button>
         <button type="button" disabled={busy} className={cx(linkButton, 'text-kaleiopi-purple-600 hover:text-kaleiopi-purple-800')} onClick={() => ctx.onVerifiedChange(user, !user.verified)}>
           {user.verified ? 'Unverify' : 'Verify'}
         </button>
+        {!user.verified && ctx.onResendVerification && (
+          <button type="button" disabled={busy || resend === 'sending'} className={cx(linkButton, 'text-kaleiopi-purple-600 hover:text-kaleiopi-purple-800')} onClick={() => ctx.onResendVerification!(user)}>
+            {resend === 'sending' ? 'Sending…' : resend === 'sent' ? 'Sent ✓' : 'Resend'}
+          </button>
+        )}
         {!isSelf && (
           <button type="button" disabled={busy} className={cx(linkButton, 'text-red-600 hover:text-red-700')} onClick={() => ctx.requestDelete(user)}>
             Delete
@@ -168,15 +187,23 @@ const columns = helper.columns([
     sortFn: 'datetime',
     sortUndefined: 'last',
     enableGlobalFilter: false,
-    cell: ({ row }) =>
-      row.original.tosVersion ? (
-        <div className="text-gray-600">
-          <div>ToS v{row.original.tosVersion}</div>
-          {row.original.tosAcceptedAt && <div className="text-xs text-gray-400">{formatDate(row.original.tosAcceptedAt)}</div>}
-        </div>
-      ) : (
-        <span className="text-amber-700">Not accepted</span>
-      ),
+    cell: ({ row }) => (
+      <div className="flex flex-col gap-1.5 items-start">
+        {row.original.tosVersion ? (
+          <div className="text-gray-600">
+            <div>ToS v{row.original.tosVersion}</div>
+            {row.original.tosAcceptedAt && <div className="text-xs text-gray-400">{formatDate(row.original.tosAcceptedAt)}</div>}
+          </div>
+        ) : (
+          <span className="text-amber-700">Not accepted</span>
+        )}
+        {row.original.isMinor && (
+          <Badge tone={row.original.hasParentalConsent ? 'success' : 'danger'}>
+            {row.original.hasParentalConsent ? 'Parent consent on file' : 'Minor — no parent consent'}
+          </Badge>
+        )}
+      </div>
+    ),
   }),
   helper.display({ id: 'actions', header: 'Actions', cell: ({ row }) => <RowActionsCell user={row.original} /> }),
 ]);
@@ -199,7 +226,8 @@ function SortableHeader({ header }: { header: Header<typeof features, KaleiopiUs
 }
 
 /** Admin list of Kaleiopi accounts: sortable, searchable, with per-row role,
- * enable/disable, verify/unverify, and delete (confirmed in a dialog). */
+ * enable/disable, verify/unverify, resend verification (optional), and delete
+ * (confirmed in a dialog). Minors show their parental-consent status. */
 export function UserTable({
   users,
   roles = DEFAULT_ROLES,
@@ -209,6 +237,8 @@ export function UserTable({
   onActiveChange,
   onVerifiedChange,
   onDelete,
+  onResendVerification,
+  resendState = {},
   searchable = true,
   emptyMessage = 'No users yet.',
   className,
@@ -232,7 +262,7 @@ export function UserTable({
   };
 
   return (
-    <ActionsContext.Provider value={{ onRoleChange, onActiveChange, onVerifiedChange, roles, currentUserId, busy: new Set(busyUserIds), requestDelete: setPendingDelete }}>
+    <ActionsContext.Provider value={{ onRoleChange, onActiveChange, onVerifiedChange, onResendVerification, resendState, roles, currentUserId, busy: new Set(busyUserIds), requestDelete: setPendingDelete }}>
       <div className={cx('flex flex-col gap-3', className)}>
         {searchable && (
           <div className="relative max-w-xs">
