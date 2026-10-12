@@ -15,6 +15,7 @@ npm run tokens          # regenerate src/tokens/ from scripts/generate-tokens.mj
 
 - **Foundations:** the seven brand colors from `kaleiopi/docs/brand-colors.md`, each with a generated 50–950 scale and WCAG contrast ratios.
 - **Components:** Assistant, AssistantModal, Button, Input, Textarea, Select, PasswordInput, Field, Card, Badge, Alert, Modal, Avatar, AvatarStack, ProgressBar, StepIndicator, Logo.
+- **Tables:** DataTable (TanStack Table: sorting, search, and a server mode with paging) and UserTable (the admin users list, built on DataTable). Build DataTable columns with `createDataTableColumns<Row>()`.
 
 Each component is extracted from a pattern the app repeats inline today, recolored from Tailwind's `indigo` to the brand tokens.
 

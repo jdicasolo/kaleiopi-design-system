@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, fn, userEvent, within } from 'storybook/test';
-import { UserTable, type KaleiopiUser } from './UserTable';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
+import type { DataTableQuery } from './DataTable';
+import { UserTable, type KaleiopiUser, type RoleOption } from './UserTable';
 
 const TOS = '2026-09-01-draft1';
 
@@ -139,3 +140,83 @@ export const Search: Story = {
 export const Saving: Story = { args: { busyUserIds: ['2'] } };
 
 export const Empty: Story = { args: { users: [] } };
+
+const UNIVERSITY_ROLES: RoleOption[] = [
+  { value: 'student', label: 'Student' },
+  { value: 'ta', label: 'TA' },
+  { value: 'professor', label: 'Professor' },
+];
+const ADMIN_ROLE: RoleOption[] = [{ value: 'admin', label: 'Admin' }];
+const roleOptions = (u: KaleiopiUser) => (u.role === 'admin' ? ADMIN_ROLE : UNIVERSITY_ROLES);
+
+/** University accounts choose Student, TA or Professor; admin rows are read-only. */
+export const RoleOptionsPerRow: Story = {
+  args: { users: MIXED, currentUserId: undefined, roleOptions },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const studentRole = canvas.getByLabelText('Role for Lindsay F');
+    await expect(within(studentRole).getAllByRole('option').map((o) => o.textContent)).toEqual(['Student', 'TA', 'Professor']);
+    await expect(studentRole).toBeEnabled();
+    await expect(canvas.getByLabelText('Role for Kaleiopi Admin')).toBeDisabled();
+  },
+};
+
+const ADMINS: KaleiopiUser[] = [
+  USERS[0],
+  { id: '20', fullName: 'New Teammate', username: 'newteammate', email: 'newteammate@kaleiopi.app', role: 'admin', active: true, verified: false, status: 'invite_pending' },
+  { id: '21', fullName: 'Legacy Admin', username: 'legacyadmin', email: 'legacy@gmail.com', role: 'admin', active: true, verified: true, tosVersion: TOS, tosAcceptedAt: '2026-08-01T12:00:00Z', status: 'needs_replacement' },
+];
+
+/** Admins who haven't set a password show "Invite pending" with Resend invite; legacy admins are flagged. */
+export const InvitePending: Story = {
+  args: { users: ADMINS, roleOptions, onResendInvite: fn(), onResendVerification: fn() },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    const pending = within(canvas.getByText('New Teammate').closest('tr')!);
+    await expect(pending.getByText('Invite pending')).toBeInTheDocument();
+    await expect(pending.queryByRole('button', { name: 'Resend' })).not.toBeInTheDocument();
+    await expect(pending.queryByRole('button', { name: 'Verify' })).not.toBeInTheDocument();
+    await userEvent.click(pending.getByRole('button', { name: 'Resend invite' }));
+    await expect(args.onResendInvite).toHaveBeenCalledWith(expect.objectContaining({ id: '20' }));
+    await expect(within(canvas.getByText('Legacy Admin').closest('tr')!).getByText('Replace with @kaleiopi.app admin')).toBeInTheDocument();
+  },
+};
+
+/** 300 students served a page at a time, as on a university's users page. */
+const MANY: KaleiopiUser[] = Array.from({ length: 300 }, (_, i) => ({
+  id: String(100 + i), fullName: `Student ${String(i + 1).padStart(3, '0')}`, username: `student${i + 1}`,
+  email: `student${i + 1}@psu.edu`, university: 'Penn State University', role: 'student', active: true, verified: i % 7 !== 0,
+  tosVersion: TOS, tosAcceptedAt: '2026-10-01T12:00:00Z',
+}));
+
+export const ServerPaging: Story = {
+  args: { users: [], roleOptions },
+  render: function Render(args) {
+    const [query, setQuery] = useState<DataTableQuery>({ pageIndex: 0, pageSize: 50, sorting: [], globalFilter: '' });
+    const page = useMemo(() => {
+      const term = query.globalFilter.toLowerCase();
+      const rows = MANY.filter((u) => !term || u.fullName.toLowerCase().includes(term) || u.email.includes(term));
+      return { items: rows.slice(query.pageIndex * query.pageSize, (query.pageIndex + 1) * query.pageSize), total: rows.length };
+    }, [query]);
+    return <UserTable {...args} users={page.items} manual={{ ...query, total: page.total, onChange: setQuery }} />;
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText(/300 results · Page 1 of 6/)).toBeInTheDocument();
+    await userEvent.click(canvas.getByRole('button', { name: 'Next page' }));
+    await expect(canvas.getByText('Student 051')).toBeInTheDocument();
+    // Names are zero-padded, so "Student 29" matches Student 290–299.
+    await userEvent.type(canvas.getByRole('searchbox', { name: 'Search users' }), 'Student 29');
+    await waitFor(() => expect(canvas.getByText(/^10 results/)).toBeInTheDocument());
+  },
+};
+
+export const Loading: Story = { args: { users: [], loading: true } };
+
+export const Error: Story = {
+  args: { users: [], error: 'Could not reach the server.', onRetry: fn() },
+  play: async ({ args, canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Try again' }));
+    await expect(args.onRetry).toHaveBeenCalledOnce();
+  },
+};
